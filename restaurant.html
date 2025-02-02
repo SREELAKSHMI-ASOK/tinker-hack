@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OhNoNosh Restaurant</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>  </head>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0; /* Light gray background */
+        }
+
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h2 {
+            text-align: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .message {
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+<body>
+    <div class="container">
+        <h1>Welcome to OhNoNosh</h1>
+
+        <div id="menu" style="display:none;">
+            <h2>Menu</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Item ID</th>
+                        <th>Item Name</th>
+                        <th>Price</th>
+                        <th>Item Type</th>
+                    </tr>
+                </thead>
+                <tbody id="menu-table-body">
+                    </tbody>
+            </table>
+            <button onclick="showOrderForm()">Order Now</button>
+            <button onclick="showMainPage()">Back to Main Page</button>
+
+        </div>
+
+        <div id="order-form" style="display:none;">
+            <h2>Place Your Order</h2>
+            <form id="orderForm">
+                <div class="form-group">
+                    <label for="itemId">Item ID:</label>
+                    <input type="number" id="itemId" name="itemId" required>
+                </div>
+                <div class="form-group">
+                    <label for="quantity">Quantity:</label>
+                    <input type="number" id="quantity" name="quantity" required>
+                </div>
+                <div class="form-group">
+                    <label for="name">Your Name:</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="mobno">Mobile Number:</label>
+                    <input type="number" id="mobno" name="mobno" required>
+                </div>
+                <div class="form-group">
+                    <label for="address">Address:</label>
+                    <textarea id="address" name="address" required></textarea>
+                </div>
+                <button type="button" onclick="placeOrder()">Place Order</button>
+                <button onclick="showMenu()">Back to Menu</button>
+            </form>
+        </div>
+
+        <div id="view-orders" style="display:none;">
+            <h2>Your Orders</h2>
+            <div id="order-details">
+                </div>
+            <button onclick="showMainPage()">Back to Main Page</button>
+        </div>
+
+        <div id="cancel-order" style="display:none;">
+            <h2>Cancel Order</h2>
+            <form id="cancelForm">
+                <div class="form-group">
+                    <label for="cancelMobno">Mobile Number:</label>
+                    <input type="number" id="cancelMobno" name="cancelMobno" required>
+                </div>
+                <button type="button" onclick="cancelOrder()">Cancel Order</button>
+                <button onclick="showMainPage()">Back to Main Page</button>
+            </form>
+        </div>
+
+        <div id="feedback" style="display:none;">
+            <h2>Feedback</h2>
+            <form id="feedbackForm">
+                <div class="form-group">
+                    <label for="feedbackName">Your Name:</label>
+                    <input type="text" id="feedbackName" name="feedbackName" required>
+                </div>
+                <div class="form-group">
+                    <label for="feedbackText">Your Feedback:</label>
+                    <textarea id="feedbackText" name="feedbackText" required></textarea>
+                </div>
+                <button type="button" onclick="submitFeedback()">Submit Feedback</button>
+                <button onclick="showMainPage()">Back to Main Page</button>
+            </form>
+        </div>
+
+        <div id="main-page">
+            <h2>Main Menu</h2>
+            <button onclick="showMenu()">View Menu</button>
+            <button onclick="showViewOrders()">View Your Orders</button>
+            <button onclick="showCancelOrder()">Cancel Order</button>
+            <button onclick="showFeedback()">Feedback</button>
+            <button onclick="exit()">Exit</button>
+        </div>
+
+        <div id="message" class="message"></div>  </div>
+
+    <script>
+
+        function showMenu() {
+            document.getElementById("main-page").style.display = "none";
+            document.getElementById("menu").style.display = "block";
+            document.getElementById("order-form").style.display = "none";
+            document.getElementById("view-orders").style.display = "none";
+            document.getElementById("cancel-order").style.display = "none";
+            document.getElementById("feedback").style.display = "none";
+
+            $.getJSON('/menu', function(data) {
+                const tableBody = document.getElementById("menu-table-body");
+                tableBody.innerHTML = ""; // Clear previous data
+                data.forEach(item => { // Use the data from the server
+                    const row = tableBody.insertRow();
+                    const idCell = row.insertCell();
+                    const nameCell = row.insertCell();
+                    const priceCell = row.insertCell();
+                    const typeCell = row.insertCell();
+
+                    idCell.textContent = item.Item_Id;
+                    nameCell.textContent = item.Item_Name;
+                    priceCell.textContent = item.PRICE;
+                    typeCell.textContent = item.Item_Type;
+                });
+            });
+        }
+
+        function placeOrder() {
+            const orderData = {
+                itemId: document.getElementById('itemId').value,
+                quantity: document.getElementById('quantity').value,
+                name: document.getElementById('name').value,
+                mobno: document.getElementById('mobno').value,
+                address: document.getElementById('address').value
+            };
+
+            $.ajax({
+                type: 'POST',
+                url: '/order',
+                contentType: 'application/json',  // Important: Tell the server you're sending JSON
+                data: JSON.stringify(orderData),   // Convert the JavaScript object to JSON
+                success: function(response) {
+                    alert(response.message); // Show success/error message
+                    document.getElementById('orderForm').reset(); // Clear the form
+                    showMainPage(); // redirect to main page
+                },
+                error: function(error) {
+                    alert(error.responseJSON.error);
+                }
+            });
+        }
+        function showOrderForm() {
+            document.getElementById("menu").style.display = "none";
+            document.getElementById("order-form").style.display = "block";
+        }
+
+        function showViewOrders() {
+            document.getElementById("main-page").style.display = "none";
+            document.getElementById("view-orders").style.display = "block";
+            document.getElementById("order-details").innerHTML = "Fetching orders... (Placeholder)"; // Replace with actual order
