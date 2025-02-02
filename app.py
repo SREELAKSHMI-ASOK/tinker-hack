@@ -1,7 +1,8 @@
 from flask import Flask, render_template, request, jsonify
 import mysql.connector
 
-app=Flask(__name__)
+def create_app():
+    app=Flask(__name__)
 
 mydb=mysql.connector.connect(host="localhost", user="root", password="SYSTEM", database="OhNoNosh")
 cur=mydb.cursor()
@@ -52,5 +53,11 @@ def place_order():
     return jsonify({'message': 'Invalid request'})
 
 
+return app
+
+
 if __name__=='__main__':
+    app=create_app()
     app.run(debug=True)
+
+    
