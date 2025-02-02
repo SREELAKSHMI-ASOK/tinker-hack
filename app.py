@@ -53,7 +53,7 @@ def place_order():
     return jsonify({'message': 'Invalid request'})
 
 
-return app
+    return app
 
 
 if __name__=='__main__':
